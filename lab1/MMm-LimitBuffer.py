@@ -37,8 +37,8 @@ LOAD=0.85
 SERVICE = 10.0 # av service time
 ARRIVAL   = SERVICE/LOAD # av inter-arrival time
 TYPE1 = 1
-queueSize = 1
-serverNum = 2
+queueSize = 2
+serverNum = 3
 SIM_TIME = 500000
 
 arrivals=0
@@ -74,7 +74,7 @@ def arrival_process(environment,queue,queueSize,serverNum):
 
         #update state variable and put the client in the queue
         # Implementation of controlling queueing size
-        if len(queue)<queueSize:
+        if len(queue)<(queueSize+1):
             cl=Client(TYPE1,env.now)
             queue.append(cl)
             users+=1

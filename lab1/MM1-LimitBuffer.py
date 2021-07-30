@@ -44,7 +44,7 @@ arrivals=0
 users=0
 BusyServer=False # True: server is currently busy; False: server is currently idle
 
-queueSize = 1
+queueSize = 0
 MM1=[]
 
 # ******************************************************************************
@@ -68,7 +68,7 @@ def arrival_process(environment,queue,queueSize):
 
         #update state variable and put the client in the queue
         # Implementation of controlling queueing size
-        if len(queue)<queueSize:
+        if len(queue)<(queueSize+1):
             cl=Client(TYPE1,env.now)
             queue.append(cl)
             users += 1
@@ -132,8 +132,8 @@ def busyMonitor(environment):
                 if BusyServer == False:
                     data.busytimeCount+=environment.now-start
                     break
-                yield environment.timeout(0.1)
-        yield environment.timeout(0.1)
+                yield environment.timeout(1)
+        yield environment.timeout(1)
 
 
 # ******************************************************************************
