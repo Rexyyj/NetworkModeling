@@ -130,7 +130,7 @@ class MM1_sys:
             "avgNumPack": self.data.ut / env.now,
             "avgQueDel": self.data.delay / self.data.dep,
             "avgWaitDel": self.data.waitingDelay / self.data.dep,
-            "abgBufOccu": self.data.bufferCount / self.data.arr,
+            "avgBufOccu": self.data.bufferCount / self.data.arr,
             "busyTime": self.data.busytimeCount,
             "serBusyRate": self.data.busytimeCount / self.SIM_TIME
         }
@@ -171,7 +171,7 @@ if __name__ == "__main__":
     print("Average number of packets in system:", measure["avgNumPack"])
     print("Average queueing delay: ", measure["avgQueDel"])
     print("Average waiting delay: ", measure["avgWaitDel"])  # All packets
-    print("Average buffer occupancy: ", measure["abgBufOccu"])
+    print("Average buffer occupancy: ", measure["avgBufOccu"])
     print("Busy time: ", measure["busyTime"])
     print("Server busy rate: ", measure["serBusyRate"])
 
