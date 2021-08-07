@@ -44,7 +44,7 @@ arrivals=0
 users=0
 BusyServer=False # True: server is currently busy; False: server is currently idle
 
-queueSize = 0
+queueSize = 3
 MM1=[]
 
 # ******************************************************************************

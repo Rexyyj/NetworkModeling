@@ -49,8 +49,6 @@ BusyServer={} # True: server is currently busy; False: server is currently idle
 for i in range(serverNum):
     BusyServer[i]=False
 
-for elem in BusyServer:
-    print (elem)
 
 
 # ******************************************************************************
