@@ -66,7 +66,7 @@ class MM1_sys:
             # update state variable and put the client in the queue
             # Implementation of controlling queueing size
             if len(queue) < (queueSize + 1):
-                cl = Client(self.TYPE1, env.now)
+                cl = Client(self.TYPE1, environment.now)
                 queue.append(cl)
                 self.users += 1
             else:
@@ -77,7 +77,7 @@ class MM1_sys:
             if self.users == 1:
                 self.BusyServer = True
                 service_time = random.expovariate(1.0 / self.SERVICE)
-                env.process(self.departure_process(env, service_time, queue))
+                environment.process(self.departure_process(environment, service_time, queue))
 
             # yield an event to the simulator
             yield environment.timeout(inter_arrival)
@@ -99,13 +99,13 @@ class MM1_sys:
         self.users -= 1
 
         user = queue.pop(0)
-        self.data.delay += (env.now - user.Tarr)
+        self.data.delay += (environment.now - user.Tarr)
 
         if self.users == 0:
             self.BusyServer = False
         else:
             service_time = random.expovariate(1.0 / self.SERVICE)
-            env.process(self.departure_process(env, service_time, queue))
+            environment.process(self.departure_process(environment, service_time, queue))
 
     # ******************************************************************************
     def busyMonitor(self, environment):
@@ -120,7 +120,7 @@ class MM1_sys:
                     yield environment.timeout(1)
             yield environment.timeout(1)
 
-    def calculate_measure(self):
+    def calculate_measure(self,env):
         return {
             "numFogPack": self.data.arr,
             "numPrePack": self.data.dep,
@@ -161,7 +161,7 @@ if __name__ == "__main__":
     # simulate until SIM_TIME
     env.run(until=mm1_sys.SIM_TIME)
 
-    measure = mm1_sys.calculate_measure()
+    measure = mm1_sys.calculate_measure(env)
 
     print("Total number of packets arrived fog controller: ", measure["numFogPack"])
     print("Number of pre-processed packets: ", measure["numPrePack"])
