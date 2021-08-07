@@ -120,18 +120,20 @@ class MM1_sys:
                     yield environment.timeout(1)
             yield environment.timeout(1)
 
-    def print_measure(self):
-        print("Total number of packets arrived fog controller: ", self.data.arr)
-        print("Number of pre-processed packets: ", self.data.dep)
-        print("Pre-processing probability: ", self.data.dep / self.data.arr)
-        print("Number of packets forwarded to could: ", self.data.forwardToCould)
-        print("Forward to could probability: ", self.data.forwardToCould / self.data.arr)
-        print("Average number of packets in system:", self.data.ut / env.now)
-        print("Average queueing delay: ", self.data.delay / self.data.dep)
-        print("Average waiting delay: ", self.data.waitingDelay / self.data.dep)  # All packets
-        print("Average buffer occupancy: ", self.data.bufferCount / self.data.arr)
-        print("Busy time: ", self.data.busytimeCount)
-        print("Server busy rate: ", self.data.busytimeCount / self.SIM_TIME)
+    def calculate_measure(self):
+        return {
+            "numFogPack": self.data.arr,
+            "numPrePack": self.data.dep,
+            "preProb": self.data.dep / self.data.arr,
+            "numForwCloud": self.data.forwardToCould,
+            "forwCloudProb": self.data.forwardToCould / self.data.arr,
+            "avgNumPack": self.data.ut / env.now,
+            "avgQueDel": self.data.delay / self.data.dep,
+            "avgWaitDel": self.data.waitingDelay / self.data.dep,
+            "abgBufOccu": self.data.bufferCount / self.data.arr,
+            "busyTime": self.data.busytimeCount,
+            "serBusyRate": self.data.busytimeCount / self.SIM_TIME
+        }
 
 
 if __name__ == "__main__":
@@ -159,4 +161,17 @@ if __name__ == "__main__":
     # simulate until SIM_TIME
     env.run(until=mm1_sys.SIM_TIME)
 
-    mm1_sys.print_measure()
+    measure = mm1_sys.calculate_measure()
+
+    print("Total number of packets arrived fog controller: ", measure["numFogPack"])
+    print("Number of pre-processed packets: ", measure["numPrePack"])
+    print("Pre-processing probability: ", measure["preProb"])
+    print("Number of packets forwarded to could: ", measure["numForwCloud"])
+    print("Forward to could probability: ", measure["forwCloudProb"])
+    print("Average number of packets in system:", measure["avgNumPack"])
+    print("Average queueing delay: ", measure["avgQueDel"])
+    print("Average waiting delay: ", measure["avgWaitDel"])  # All packets
+    print("Average buffer occupancy: ", measure["abgBufOccu"])
+    print("Busy time: ", measure["busyTime"])
+    print("Server busy rate: ", measure["serBusyRate"])
+
