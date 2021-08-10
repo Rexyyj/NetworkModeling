@@ -14,11 +14,10 @@ mm1_config = {
 
 measures = []
 avg_service_time = []
-for i in range(10):
+for i in range(3):
     random.seed(42)
-    # mm1_config["SERVICE"] = i+1
-    mm1_config["LOAD"]=0.1+i*0.2
-    avg_service_time.append(0.1+i*0.2)
+    mm1_config["SERVICE"] = 1+2*i
+    avg_service_time.append(1 + i * 2)
     mm1_config["ARRIVAL"] = mm1_config["SERVICE"] / mm1_config["LOAD"]
     mm1_sys = MM1_sys(mm1_config)
     env = simpy.Environment()
@@ -36,14 +35,26 @@ preProProb = []
 forCloProb = []
 buffOccu = []
 busyRate = []
+
+queueDelay = []
+waitDelay = []
 for mea in measures:
     preProProb.append(mea["preProb"])
     forCloProb.append(mea["forwCloudProb"])
-    buffOccu.append(mea["avgBufOccu"])
+    buffOccu.append(mea["avgBufOccu"]) # have some problem in counting !!!!!
     busyRate.append(mea["serBusyRate"])
+    queueDelay.append(mea["avgQueDel"])
+    waitDelay.append(mea["avgWaitDel"])
 
-# plt.plot(avg_service_time,preProProb,"b")
-plt.plot(avg_service_time,forCloProb,"g")
-# plt.plot(avg_service_time,buffOccu,"r")
-# plt.plot(avg_service_time,busyRate,"y")
+plt.plot(avg_service_time, preProProb, "b", label="Pre-process Prob")
+plt.plot(avg_service_time, forCloProb, "g", label="Forward Prob")
+plt.plot(avg_service_time, buffOccu, "r", label="Avg Buffer Occupancy")
+plt.plot(avg_service_time, busyRate, "y", label="Busy rate of server")
+plt.legend()
+plt.show()
+
+
+plt.plot(avg_service_time, queueDelay, "b", label="Avg Queue delay")
+plt.plot(avg_service_time, waitDelay, "g", label="Avg wait delay")
+plt.legend()
 plt.show()

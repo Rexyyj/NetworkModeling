@@ -83,7 +83,6 @@ class MMm_sys:
                         self.BusyServer[ser] = True
                         service_time = random.expovariate(1.0 / self.SERVICE)
                         environment.process(self.departure_process(environment, service_time, queue, cli, ser))
-                        print("Assigned to Server: ", server)
                         break
 
             # yield an event to the simulator
@@ -164,8 +163,8 @@ if __name__=="__main__":
         "ARRIVAL": 0.0,  # need to be set!!
         "TYPE1": 1,
         "SIM_TIME": 500000,
-        "QUEUESIZE": 1,
-        "SERNUM":3
+        "QUEUESIZE": 0,
+        "SERNUM":1
     }
     mmm_config["ARRIVAL"] = mmm_config["SERVICE"] / mmm_config["LOAD"]
 
