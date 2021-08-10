@@ -1,6 +1,6 @@
 import random
 import simpy
-from MMmLimitBuffer import MMm_sys
+from impl.MMmLimitBuffer import MMm_sys
 import matplotlib.pyplot as plt
 
 mmm_config = {

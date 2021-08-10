@@ -1,6 +1,6 @@
 import random
 import simpy
-from MM1LimitBuffer import MM1_sys
+from impl.MM1LimitBuffer import MM1_sys
 import matplotlib.pyplot as plt
 
 mm1_config = {
