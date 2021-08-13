@@ -76,20 +76,25 @@ class MMm_sys:
                 yield environment.timeout(inter_arrival)
                 continue
 
-            while len(queue) > 0 and (False in self.BusyServer.values()):
-                cli = queue.pop(0)
-                for ser in self.BusyServer.keys():
-                    if self.BusyServer[ser] == False:
-                        self.BusyServer[ser] = True
-                        service_time = random.expovariate(1.0 / self.SERVICE)
-                        environment.process(self.departure_process(environment, service_time, queue, cli, ser))
-                        break
+            self.assignMethod(queue,environment)
 
             # yield an event to the simulator
             yield environment.timeout(inter_arrival)
 
             # the execution flow will resume here
             # when the "timeout" event is executed by the "environment"
+
+    def assignMethod(self,queue,environment):
+        print("Using random assign method!")
+        while len(queue) > 0 and (False in self.BusyServer.values()):
+            cli = queue.pop(0)
+            for ser in self.BusyServer.keys():
+                if self.BusyServer[ser] == False:
+                    self.BusyServer[ser] = True
+                    service_time = random.expovariate(1.0 / self.SERVICE)
+                    environment.process(self.departure_process(environment, service_time, queue, cli, ser))
+                    break
+
 
     # departures *******************************************************************
     def departure_process(self, environment, service_time, queue, user, server):
@@ -163,8 +168,8 @@ if __name__=="__main__":
         "ARRIVAL": 0.0,  # need to be set!!
         "TYPE1": 1,
         "SIM_TIME": 500000,
-        "QUEUESIZE": 0,
-        "SERNUM":1
+        "QUEUESIZE": 2,
+        "SERNUM":2
     }
     mmm_config["ARRIVAL"] = mmm_config["SERVICE"] / mmm_config["LOAD"]
 
