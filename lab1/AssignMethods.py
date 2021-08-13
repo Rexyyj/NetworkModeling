@@ -30,8 +30,30 @@ class Round_Robin(MMm_sys):
                         self.position += 1
 
 class Lest_Cost(MMm_sys):
-    def __init__(self, config):
+    def __init__(self, config,cost):
         super().__init__(config)
+        self.cost = cost
+
+    def assignMethod(self, queue, environment):
+        print("Using least cost assign method!")
+        while len(queue) > 0 and (False in self.BusyServer.values()):
+            cli = queue.pop(0)
+            free_sers = []
+            for ser in self.BusyServer.keys():
+                if self.BusyServer[ser] == False:
+                    free_sers.append(ser)
+            cost=999
+            least_cost_ser =None
+            for ser in free_sers:
+                if self.cost[ser]<cost:
+                    least_cost_ser = ser
+                    cost = self.cost[ser]
+
+            if least_cost_ser!=None:
+                self.BusyServer[least_cost_ser] = True
+                service_time = random.expovariate(1.0 / self.SERVICE)
+                environment.process(self.departure_process(environment, service_time, queue, cli, least_cost_ser))
+
 
 
 
@@ -48,11 +70,14 @@ if __name__ == "__main__":
         "TYPE1": 1,
         "SIM_TIME": 500000,
         "QUEUESIZE": 2,
-        "SERNUM": 2
+        "SERNUM": 3
     }
     mmm_config["ARRIVAL"] = mmm_config["SERVICE"] / mmm_config["LOAD"]
+    cost_map = {}
+    for i in range(mmm_config["SERNUM"]):
+        cost_map[i] = random.randint(1, 10)
 
-    mmm_sys = Round_Robin(mmm_config)
+    mmm_sys = Lest_Cost(mmm_config,cost_map)
 
     env = simpy.Environment()
 
@@ -77,3 +102,4 @@ if __name__ == "__main__":
     print("Average buffer occupancy: ", measure["avgBufOccu"])
     print("Busy time: ", measure["busyTime"])
     print("Server busy rate: ", measure["serBusyRate"])
+    print("Cost of each server: ", cost_map)
