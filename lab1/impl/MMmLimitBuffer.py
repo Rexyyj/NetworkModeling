@@ -41,7 +41,6 @@ class MMm_sys:
         self.queueSize = config["QUEUESIZE"]
         self.serverNum = config["SERNUM"]
 
-
         self.arrivals = 0
         self.users = 0
         self.MMm = []
@@ -76,7 +75,7 @@ class MMm_sys:
                 yield environment.timeout(inter_arrival)
                 continue
 
-            self.assignMethod(queue,environment)
+            self.assignMethod(queue, environment)
 
             # yield an event to the simulator
             yield environment.timeout(inter_arrival)
@@ -84,7 +83,7 @@ class MMm_sys:
             # the execution flow will resume here
             # when the "timeout" event is executed by the "environment"
 
-    def assignMethod(self,queue,environment):
+    def assignMethod(self, queue, environment):
         print("Using random assign method!")
         while len(queue) > 0 and (False in self.BusyServer.values()):
             cli = queue.pop(0)
@@ -92,12 +91,12 @@ class MMm_sys:
                 if self.BusyServer[ser] == False:
                     self.BusyServer[ser] = True
                     service_time = random.expovariate(1.0 / self.SERVICE)
-                    environment.process(self.departure_process(environment, service_time, queue, cli, ser))
+                    environment.process(
+                        self.departure_process(environment, service_time, queue, cli, ser, self.SERVICE))
                     break
 
-
     # departures *******************************************************************
-    def departure_process(self, environment, service_time, queue, user, server):
+    def departure_process(self, environment, service_time, queue, user, server, service_rate):
 
         self.data.waitingDelay += (environment.now - user.Tarr)
 
@@ -117,13 +116,13 @@ class MMm_sys:
             self.BusyServer[server] = False
         else:
             cli = queue.pop(0)
-            service_time = random.expovariate(1.0 / self.SERVICE)
-            environment.process(self.departure_process(environment, service_time, queue, cli, server))
+            service_time = random.expovariate(1.0 / service_rate)
+            environment.process(self.departure_process(environment, service_time, queue, cli, server,service_rate))
 
             # the execution flow will resume here
             # when the "timeout" event is executed by the "environment"
 
-# ******************************************************************************
+    # ******************************************************************************
     def busyMonitor(self, environment, server):
         self.data.busytimeCount[server] = 0
         while True:
@@ -136,7 +135,7 @@ class MMm_sys:
                     yield environment.timeout(1)
             yield environment.timeout(1)
 
-    def calculate_measure(self,env):
+    def calculate_measure(self, env):
         busyRate = {}
         for server in self.data.busytimeCount.keys():
             busyRate[server] = self.data.busytimeCount[server] / self.SIM_TIME
@@ -154,11 +153,12 @@ class MMm_sys:
             "serBusyRate": busyRate
         }
 
+
 # ******************************************************************************
 # the main body of the simulation
 # ******************************************************************************
 
-if __name__=="__main__":
+if __name__ == "__main__":
 
     random.seed(42)
 
@@ -169,7 +169,7 @@ if __name__=="__main__":
         "TYPE1": 1,
         "SIM_TIME": 500000,
         "QUEUESIZE": 2,
-        "SERNUM":2
+        "SERNUM": 2
     }
     mmm_config["ARRIVAL"] = mmm_config["SERVICE"] / mmm_config["LOAD"]
 

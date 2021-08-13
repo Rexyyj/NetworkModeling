@@ -3,38 +3,11 @@ import simpy
 from impl.MMmLimitBuffer import MMm_sys
 
 
-class Round_Robin(MMm_sys):
-
-    def __init__(self, config):
-        super().__init__(config)
-        self.position = 0
-
-    # Override assign method to round robin
-    def assignMethod(self, queue, environment):
-        print("Using round robin assign method!")
-        while len(queue) > 0 and (False in self.BusyServer.values()):
-            cli = queue.pop(0)
-            while True:
-                if self.BusyServer[self.position] == False:
-                    self.BusyServer[self.position] = True
-                    service_time = random.expovariate(1.0 / self.SERVICE)
-                    environment.process(self.departure_process(environment, service_time, queue, cli, self.position,self.SERVICE))
-                    if self.position == self.serverNum - 1:
-                        self.position = 0
-                    else:
-                        self.position += 1
-                    break
-                else:
-                    if self.position == self.serverNum - 1:
-                        self.position = 0
-                    else:
-                        self.position += 1
-
-
-class Lest_Cost(MMm_sys):
+class Service_Rate(MMm_sys):
     def __init__(self, config, cost):
         super().__init__(config)
         self.cost = cost
+        self.totalCost = 0
 
     # Override assign method to least cost
     def assignMethod(self, queue, environment):
@@ -53,9 +26,64 @@ class Lest_Cost(MMm_sys):
                     cost = self.cost[ser]
 
             if least_cost_ser != None:
+                self.totalCost += cost
                 self.BusyServer[least_cost_ser] = True
-                service_time = random.expovariate(1.0 / self.SERVICE)
-                environment.process(self.departure_process(environment, service_time, queue, cli, least_cost_ser,self.SERVICE))
+                service_rate = self.SERVICE[least_cost_ser]
+                service_time = random.expovariate(1.0 / service_rate)
+                environment.process(
+                    self.departure_process(environment, service_time, queue, cli, least_cost_ser, service_rate))
+
+class Round_Robin_Cost(MMm_sys):
+
+    def __init__(self, config,cost):
+        super().__init__(config)
+        self.cost=cost
+        self.position = 0
+        self.totalCost = 0
+
+    # Override assign method to round robin
+    def assignMethod(self, queue, environment):
+        print("Using round robin assign method!")
+        while len(queue) > 0 and (False in self.BusyServer.values()):
+            cli = queue.pop(0)
+            while True:
+                if self.BusyServer[self.position] == False:
+                    self.totalCost += self.cost[self.position]
+                    self.BusyServer[self.position] = True
+                    service_rate = self.SERVICE[self.position]
+                    service_time = random.expovariate(1.0 / service_rate)
+                    environment.process(self.departure_process(environment, service_time, queue, cli, self.position,service_rate))
+                    if self.position == self.serverNum - 1:
+                        self.position = 0
+                    else:
+                        self.position += 1
+                    break
+                else:
+                    if self.position == self.serverNum - 1:
+                        self.position = 0
+                    else:
+                        self.position += 1
+
+class Random_Assign(MMm_sys):
+    def __init__(self, config, cost):
+        super().__init__(config)
+        self.cost = cost
+        self.totalCost = 0
+
+    # Override assign method to least cost
+    def assignMethod(self, queue, environment):
+        print("Using random assign method!")
+        while len(queue) > 0 and (False in self.BusyServer.values()):
+            cli = queue.pop(0)
+            for ser in self.BusyServer.keys():
+                if self.BusyServer[ser] == False:
+                    self.totalCost+=self.cost[ser]
+                    self.BusyServer[ser] = True
+                    service_rate = self.SERVICE[ser]
+                    service_time = random.expovariate(1.0 / service_rate)
+                    environment.process(
+                        self.departure_process(environment, service_time, queue, cli, ser, service_rate))
+                    break
 
 
 if __name__ == "__main__":
@@ -64,20 +92,22 @@ if __name__ == "__main__":
 
     mmm_config = {
         "LOAD": 0.85,
-        "SERVICE": 10.0,
-        "ARRIVAL": 0.0,  # need to be set!!
+        "SERVICE": {},
+        "ARRIVAL": 10 / 0.85,
         "TYPE1": 1,
         "SIM_TIME": 500000,
         "QUEUESIZE": 2,
         "SERNUM": 3
     }
-    mmm_config["ARRIVAL"] = mmm_config["SERVICE"] / mmm_config["LOAD"]
+    cost_list = [10, 5, 1]
     cost_map = {}
     for i in range(mmm_config["SERNUM"]):
-        cost_map[i] = random.randint(1, 10)
+        cost = cost_list[i]
+        cost_map[i] = cost
+        mmm_config["SERVICE"][i] = 15 - cost
 
-    # mmm_sys = Lest_Cost(mmm_config, cost_map)
-    mmm_sys = Round_Robin(mmm_config)
+    mmm_sys = Random_Assign(mmm_config, cost_map)
+
     env = simpy.Environment()
 
     # start the arrival processes
@@ -102,3 +132,5 @@ if __name__ == "__main__":
     print("Busy time: ", measure["busyTime"])
     print("Server busy rate: ", measure["serBusyRate"])
     print("Cost of each server: ", cost_map)
+    print("Rate of each server: ", mmm_config["SERVICE"])
+    print("Total cost: ",mmm_sys.totalCost)
