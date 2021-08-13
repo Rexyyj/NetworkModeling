@@ -31,6 +31,7 @@ class Round_Robin(MMm_sys):
                         self.position += 1
 
 
+
 class Lest_Cost(MMm_sys):
     def __init__(self, config, cost):
         super().__init__(config)
@@ -76,8 +77,8 @@ if __name__ == "__main__":
     for i in range(mmm_config["SERNUM"]):
         cost_map[i] = random.randint(1, 10)
 
-    # mmm_sys = Lest_Cost(mmm_config, cost_map)
-    mmm_sys = Round_Robin(mmm_config)
+    mmm_sys = Lest_Cost(mmm_config, cost_map)
+    # mmm_sys = Round_Robin(mmm_config)
     env = simpy.Environment()
 
     # start the arrival processes

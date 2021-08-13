@@ -112,13 +112,14 @@ class MMm_sys:
         # update state variable and extract the client in the queue
         self.data.delay += (environment.now - user.Tarr)
 
-        if len(queue) == 0:
-            self.BusyServer[server] = False
-        else:
-            cli = queue.pop(0)
-            service_time = random.expovariate(1.0 / service_rate)
-            environment.process(self.departure_process(environment, service_time, queue, cli, server,service_rate))
-
+        # if len(queue) == 0:
+        #     self.BusyServer[server] = False
+        # else:
+        #     cli = queue.pop(0)
+        #     service_time = random.expovariate(1.0 / service_rate)
+        #     environment.process(self.departure_process(environment, service_time, queue, cli, server,service_rate))
+        self.BusyServer[server] = False
+        self.assignMethod(queue,environment)
             # the execution flow will resume here
             # when the "timeout" event is executed by the "environment"
 

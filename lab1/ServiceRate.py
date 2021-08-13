@@ -106,8 +106,9 @@ if __name__ == "__main__":
         cost_map[i] = cost
         mmm_config["SERVICE"][i] = 15 - cost
 
-    mmm_sys = Random_Assign(mmm_config, cost_map)
-
+    # mmm_sys = Random_Assign(mmm_config, cost_map)
+    # mmm_sys = Round_Robin_Cost(mmm_config, cost_map)
+    mmm_sys=Service_Rate(mmm_config, cost_map)
     env = simpy.Environment()
 
     # start the arrival processes
