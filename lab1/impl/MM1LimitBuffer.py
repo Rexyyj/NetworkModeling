@@ -48,6 +48,8 @@ class MM1_sys:
 
         self.data = Measure(0, 0, 0, 0, 0, 0, 0, 0, 0)
 
+        self.serviceTimeConf = config["SERVICE_CONF"]
+
     # *********************************************************************
     def arrival_process(self, environment):
         queue = self.MM1
@@ -76,7 +78,7 @@ class MM1_sys:
 
             if self.users == 1:
                 self.BusyServer = True
-                service_time = random.expovariate(1.0 / self.SERVICE)
+                service_time = self.calculate_service_time(self.serviceTimeConf)
                 environment.process(self.departure_process(environment, service_time, queue))
 
             # yield an event to the simulator
@@ -104,8 +106,11 @@ class MM1_sys:
         if self.users == 0:
             self.BusyServer = False
         else:
-            service_time = random.expovariate(1.0 / self.SERVICE)
+            service_time = self.calculate_service_time(self.serviceTimeConf)
             environment.process(self.departure_process(environment, service_time, queue))
+
+    def calculate_service_time(self, conf):
+        return random.expovariate(conf["lambd"])
 
     # ******************************************************************************
     def busyMonitor(self, environment):
@@ -120,7 +125,7 @@ class MM1_sys:
                     yield environment.timeout(1)
             yield environment.timeout(1)
 
-    def calculate_measure(self,env):
+    def calculate_measure(self, env):
         return {
             "numFogPack": self.data.arr,
             "numPrePack": self.data.dep,
@@ -145,11 +150,12 @@ if __name__ == "__main__":
         "ARRIVAL": 0.0,  # need to be set!!
         "TYPE1": 1,
         "SIM_TIME": 500000,
-        "QUEUESIZE": 3
+        "QUEUESIZE": 3,
+        "SERVICE_CONF":{}
     }
 
     mm1_config["ARRIVAL"] = mm1_config["SERVICE"] / mm1_config["LOAD"]
-
+    mm1_config["SERVICE_CONF"] = {"lambd":1/mm1_config["SERVICE"]}
     mm1_sys = MM1_sys(mm1_config)
 
     env = simpy.Environment()
@@ -174,4 +180,3 @@ if __name__ == "__main__":
     print("Average buffer occupancy: ", measure["avgBufOccu"])
     print("Busy time: ", measure["busyTime"])
     print("Server busy rate: ", measure["serBusyRate"])
-
