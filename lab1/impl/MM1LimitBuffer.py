@@ -33,7 +33,6 @@ class Client:
 
 class MM1_sys:
     def __init__(self, config):
-        self.LOAD = config["LOAD"]
         self.SERVICE = config["SERVICE"]  # av service time
         self.ARRIVAL = config["ARRIVAL"]  # av inter-arrival time
         self.TYPE1 = config["TYPE1"]
@@ -48,8 +47,7 @@ class MM1_sys:
 
         self.data = Measure(0, 0, 0, 0, 0, 0, 0, 0, 0)
 
-        self.serviceTimeConf = config["SERVICE_CONF"]
-
+        self.config = config
     # *********************************************************************
     def arrival_process(self, environment):
         queue = self.MM1
@@ -60,8 +58,9 @@ class MM1_sys:
             # cumulate statistics
             self.data.arr += 1
             self.data.ut += self.users * (environment.now - self.data.oldT)
+            self.data.bufferCount += len(queue)*(environment.now - self.data.oldT)
             self.data.oldT = environment.now
-            self.data.bufferCount += len(self.MM1)
+
             # sample the time until the next event
             inter_arrival = random.expovariate(1.0 / self.ARRIVAL)
 
@@ -78,7 +77,7 @@ class MM1_sys:
 
             if self.users == 1:
                 self.BusyServer = True
-                service_time = self.calculate_service_time(self.serviceTimeConf)
+                service_time = self.calculate_service_time(self.config)
                 environment.process(self.departure_process(environment, service_time, queue))
 
             # yield an event to the simulator
@@ -95,6 +94,7 @@ class MM1_sys:
         # cumulate statistics
         self.data.dep += 1
         self.data.ut += self.users * (environment.now - self.data.oldT)
+        self.data.bufferCount += len(queue)*(environment.now - self.data.oldT)
         self.data.oldT = environment.now
 
         # update state variable and extract the client in the queue
@@ -106,11 +106,12 @@ class MM1_sys:
         if self.users == 0:
             self.BusyServer = False
         else:
-            service_time = self.calculate_service_time(self.serviceTimeConf)
+            service_time = self.calculate_service_time(self.config)
             environment.process(self.departure_process(environment, service_time, queue))
 
     def calculate_service_time(self, conf):
-        return random.expovariate(conf["lambd"])
+        param = 1/conf["SERVICE"]
+        return random.expovariate(param)
 
     # ******************************************************************************
     def busyMonitor(self, environment):
@@ -135,7 +136,7 @@ class MM1_sys:
             "avgNumPack": self.data.ut / env.now,
             "avgQueDel": self.data.delay / self.data.dep,
             "avgWaitDel": self.data.waitingDelay / self.data.dep,
-            "avgBufOccu": self.data.bufferCount / self.data.arr,
+            "avgBufOccu": self.data.bufferCount /env.now,
             "busyTime": self.data.busytimeCount,
             "serBusyRate": self.data.busytimeCount / self.SIM_TIME
         }
@@ -145,17 +146,14 @@ if __name__ == "__main__":
     random.seed(42)
 
     mm1_config = {
-        "LOAD": 0.85,
         "SERVICE": 10.0,
         "ARRIVAL": 0.0,  # need to be set!!
         "TYPE1": 1,
         "SIM_TIME": 500000,
-        "QUEUESIZE": 3,
-        "SERVICE_CONF":{}
+        "QUEUESIZE": 2,
     }
-
-    mm1_config["ARRIVAL"] = mm1_config["SERVICE"] / mm1_config["LOAD"]
-    mm1_config["SERVICE_CONF"] = {"lambd":1/mm1_config["SERVICE"]}
+    LOAD =0.85
+    mm1_config["ARRIVAL"] = mm1_config["SERVICE"] / LOAD
     mm1_sys = MM1_sys(mm1_config)
 
     env = simpy.Environment()
