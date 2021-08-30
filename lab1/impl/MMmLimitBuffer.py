@@ -3,7 +3,7 @@
 
 import random
 import simpy
-
+import threading
 
 # ******************************************************************************
 # To take the measurements
@@ -32,7 +32,6 @@ class Client:
 
 class MMm_sys:
     def __init__(self, config):
-        self.LOAD = config["LOAD"]
         self.SERVICE = config["SERVICE"]  # av service time
         self.ARRIVAL = config["ARRIVAL"]  # av inter-arrival time
         self.TYPE1 = config["TYPE1"]
@@ -50,6 +49,8 @@ class MMm_sys:
         for i in range(self.serverNum):
             self.BusyServer[i] = False
 
+        self.semaphore=threading.Semaphore(1)
+
     # arrivals *********************************************************************
     def arrival_process(self, environment):
         queue = self.MMm
@@ -59,8 +60,8 @@ class MMm_sys:
             # cumulate statistics
             self.data.arr += 1
             self.data.ut += self.users * (environment.now - self.data.oldT)
+            self.data.bufferCount += len(queue)*(environment.now - self.data.oldT)
             self.data.oldT = environment.now
-            self.data.bufferCount += len(self.MMm)
             # sample the time until the next event
             inter_arrival = random.expovariate(1.0 / self.ARRIVAL)
 
@@ -84,7 +85,8 @@ class MMm_sys:
             # when the "timeout" event is executed by the "environment"
 
     def assignMethod(self, queue, environment):
-        print("Using random assign method!")
+        # print("Using random assign method!")
+        self.semaphore.acquire()
         while len(queue) > 0 and (False in self.BusyServer.values()):
             cli = queue.pop(0)
             for ser in self.BusyServer.keys():
@@ -94,6 +96,7 @@ class MMm_sys:
                     environment.process(
                         self.departure_process(environment, service_time, queue, cli, ser, self.SERVICE))
                     break
+        self.semaphore.release()
 
     # departures *******************************************************************
     def departure_process(self, environment, service_time, queue, user, server, service_rate):
@@ -107,6 +110,7 @@ class MMm_sys:
 
         self.data.dep += 1
         self.data.ut += self.users * (environment.now - self.data.oldT)
+        self.data.bufferCount+= len(queue)*(environment.now - self.data.oldT)
         self.data.oldT = environment.now
         self.users -= 1
         # update state variable and extract the client in the queue
@@ -149,7 +153,7 @@ class MMm_sys:
             "avgNumPack": self.data.ut / env.now,
             "avgQueDel": self.data.delay / self.data.dep,
             "avgWaitDel": self.data.waitingDelay / self.data.dep,
-            "avgBufOccu": self.data.bufferCount / self.data.arr,
+            "avgBufOccu": (self.data.bufferCount / env.now)/self.queueSize,
             "busyTime": self.data.busytimeCount,
             "serBusyRate": busyRate
         }
@@ -164,15 +168,14 @@ if __name__ == "__main__":
     random.seed(42)
 
     mmm_config = {
-        "LOAD": 0.85,
         "SERVICE": 10.0,
-        "ARRIVAL": 0.0,  # need to be set!!
+        "ARRIVAL": 10/0.85,  # need to be set!!
         "TYPE1": 1,
         "SIM_TIME": 500000,
         "QUEUESIZE": 2,
         "SERNUM": 2
     }
-    mmm_config["ARRIVAL"] = mmm_config["SERVICE"] / mmm_config["LOAD"]
+
 
     mmm_sys = MMm_sys(mmm_config)
 
