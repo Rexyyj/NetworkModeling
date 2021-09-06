@@ -98,7 +98,7 @@ if __name__ == "__main__":
 
     mmm_config = {
         "SERVICE": {},
-        "ARRIVAL": (10 / 0.95) / 5,
+        "ARRIVAL": 10 / 0.85,
         "TYPE1": 1,
         "SIM_TIME": 500000,
         "QUEUESIZE": 2,
