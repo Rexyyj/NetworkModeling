@@ -24,7 +24,7 @@ it = 0
 for buffer in buffer_size:
     it +=1
     mmm_config["QUEUESIZE"] = buffer
-    random.seed(42)
+    # random.seed(42)
 
     mmm_sys = MMm_sys(mmm_config)
     env = simpy.Environment()
@@ -89,7 +89,7 @@ measures_single = []
 for buffer in buffer_size:
     it +=1
     mmm_config["QUEUESIZE"] = buffer
-    random.seed(42)
+    # random.seed(42)
 
     mmm_sys = MMm_sys(mmm_config)
     env = simpy.Environment()

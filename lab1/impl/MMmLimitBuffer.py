@@ -44,12 +44,12 @@ class MMm_sys:
         self.users = 0
         self.MMm = []
         self.data = Measure(0, 0, 0, 0, 0)
+        self.working_ser_num = 0
 
         self.BusyServer = {}  # True: server is currently busy; False: server is currently idle
         for i in range(self.serverNum):
             self.BusyServer[i] = False
 
-        self.semaphore=threading.Semaphore(1)
 
     # arrivals *********************************************************************
     def arrival_process(self, environment):
@@ -67,7 +67,7 @@ class MMm_sys:
 
             # update state variable and put the client in the queue
             # Implementation of controlling queueing size
-            if len(queue) < (queueSize + 1):
+            if len(queue)+self.working_ser_num < (queueSize + 1):
                 cl = Client(self.TYPE1, environment.now)
                 queue.append(cl)
                 self.users += 1
@@ -86,17 +86,18 @@ class MMm_sys:
 
     def assignMethod(self, queue, environment):
         # print("Using random assign method!")
-        self.semaphore.acquire()
         while len(queue) > 0 and (False in self.BusyServer.values()):
             cli = queue.pop(0)
             for ser in self.BusyServer.keys():
                 if self.BusyServer[ser] == False:
                     self.BusyServer[ser] = True
+                    self.working_ser_num+=1
+                    if self.working_ser_num>self.serverNum:
+                        raise Exception("Server num exceeded!")
                     service_time = random.expovariate(1.0 / self.SERVICE)
                     environment.process(
                         self.departure_process(environment, service_time, queue, cli, ser, self.SERVICE))
                     break
-        self.semaphore.release()
 
     # departures *******************************************************************
     def departure_process(self, environment, service_time, queue, user, server, service_rate):
@@ -107,9 +108,9 @@ class MMm_sys:
         # print("Departure no. ",data.dep+1," at time ",environment.now," with ",users," users" )
 
         # cumulate statistics
-
+        # pop in assign will cause ut calaulate not accuate
         self.data.dep += 1
-        self.data.ut += self.users * (environment.now - self.data.oldT)
+        self.data.ut += self.users* (environment.now - self.data.oldT)
         self.data.bufferCount+= len(queue)*(environment.now - self.data.oldT)
         self.data.oldT = environment.now
         self.users -= 1
@@ -123,6 +124,7 @@ class MMm_sys:
         #     service_time = random.expovariate(1.0 / service_rate)
         #     environment.process(self.departure_process(environment, service_time, queue, cli, server,service_rate))
         self.BusyServer[server] = False
+        self.working_ser_num-=1
         self.assignMethod(queue,environment)
             # the execution flow will resume here
             # when the "timeout" event is executed by the "environment"
@@ -172,8 +174,8 @@ if __name__ == "__main__":
         "ARRIVAL": 10/0.85,  # need to be set!!
         "TYPE1": 1,
         "SIM_TIME": 500000,
-        "QUEUESIZE": 2,
-        "SERNUM": 2
+        "QUEUESIZE": 1,
+        "SERNUM": 1
     }
 
 
