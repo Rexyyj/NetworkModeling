@@ -19,7 +19,6 @@ it = 0
 theo_drop = []
 while service <= service_time_range[1]:
     it = it+1
-    random.seed(42)
     mm1_config["SERVICE"] = service
     avg_service_time.append(service)
     # mm1_config["ARRIVAL"] = mm1_config["SERVICE"] / mm1_config["LOAD"]
@@ -57,18 +56,18 @@ for mea in measures:
     waitDelay.append(mea["avgWaitDel"])
 
 
-plt.plot(avg_service_time, preProProb, "b", label="pre-process prob")
-plt.plot(avg_service_time, busyRate, "r", label="server busy rate")
-plt.plot(avg_service_time, forCloProb, "g", label="forward prob")
+plt.plot(avg_service_time, preProProb, "b", label="pre-processed prob")
+plt.plot(avg_service_time, forCloProb, "g", label="forwarded prob")
+plt.plot(avg_service_time, busyRate, "r", label="server busy prob")
 plt.xlabel('service time [s]')
-plt.ylabel('normalized value')
+plt.ylabel('probability')
 plt.grid(True)
 plt.legend()
 plt.show()
 
 
-plt.plot(avg_service_time, queueDelay, "b", label="avg queue delay")
-plt.plot(avg_service_time, waitDelay, "g", label="avg wait delay")
+plt.plot(avg_service_time, queueDelay, "b", label="avg queuing delay")
+plt.plot(avg_service_time, waitDelay, "g", label="avg waiting delay")
 plt.xlabel('service time [s]')
 plt.ylabel('delay time [s]')
 plt.legend()
@@ -79,7 +78,7 @@ plt.show()
 plt.plot(avg_service_time, forCloProb, "g", label="Measure")
 plt.plot(avg_service_time,theo_drop, "r", label="Theory")
 plt.xlabel('service time [s]')
-plt.ylabel('forward probability')
+plt.ylabel('forwarded probability')
 plt.grid(True)
 plt.legend()
 plt.show()

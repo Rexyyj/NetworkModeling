@@ -11,6 +11,9 @@ class Least_Cost(MMm_sys):
         super().__init__(config)
         self.cost = cost
         self.totalCost = 0
+        self.loadDist = []
+        for j in range(self.serverNum):
+            self.loadDist.append(0)
 
     # Override assign method to least cost
     def assignMethod(self, queue, environment):
@@ -31,6 +34,7 @@ class Least_Cost(MMm_sys):
             if least_cost_ser != None:
                 self.totalCost += cost
                 self.BusyServer[least_cost_ser] = True
+                self.loadDist[least_cost_ser]+=1
                 service_rate = self.SERVICE[least_cost_ser]
                 service_time = random.expovariate(1.0 / service_rate)
                 environment.process(
@@ -44,6 +48,9 @@ class Round_Robin_Cost(MMm_sys):
         self.cost = cost
         self.position = 0
         self.totalCost = 0
+        self.loadDist = []
+        for j in range(self.serverNum):
+            self.loadDist.append(0)
 
     # Override assign method to round robin
     def assignMethod(self, queue, environment):
@@ -54,6 +61,7 @@ class Round_Robin_Cost(MMm_sys):
                 if self.BusyServer[self.position] == False:
                     self.totalCost += self.cost[self.position]
                     self.BusyServer[self.position] = True
+                    self.loadDist[self.position]+=1
                     service_rate = self.SERVICE[self.position]
                     service_time = random.expovariate(1.0 / service_rate)
                     environment.process(
@@ -75,6 +83,9 @@ class Random_Assign(MMm_sys):
         super().__init__(config)
         self.cost = cost
         self.totalCost = 0
+        self.loadDist = []
+        for j in range(self.serverNum):
+            self.loadDist.append(0)
 
     # Override assign method to least cost
     def assignMethod(self, queue, environment):
@@ -85,6 +96,7 @@ class Random_Assign(MMm_sys):
                 if self.BusyServer[ser] == False:
                     self.totalCost += self.cost[ser]
                     self.BusyServer[ser] = True
+                    self.loadDist[ser]+=1
                     service_rate = self.SERVICE[ser]
                     service_time = random.expovariate(1.0 / service_rate)
                     environment.process(
@@ -109,7 +121,7 @@ if __name__ == "__main__":
     for i in range(mmm_config["SERNUM"]):
         cost = mmm_config["SERNUM"] - i
         cost_map[i] = cost
-        mmm_config["SERVICE"][i] = 15 - cost * 2
+        mmm_config["SERVICE"][i] = 16 - cost * 2
 
     measures = []
 
@@ -123,6 +135,7 @@ if __name__ == "__main__":
     measure_random = mmm_sys_random.calculate_measure(env_random)
     total_random = mmm_sys_random.totalCost
     measures.append(measure_random)
+    load_random = mmm_sys_random.loadDist
 
     print("Processing round robin assign...")
     mmm_sys_round = Round_Robin_Cost(mmm_config, cost_map)
@@ -134,6 +147,7 @@ if __name__ == "__main__":
     measure_round = mmm_sys_round.calculate_measure(env_round)
     total_round = mmm_sys_round.totalCost
     measures.append(measure_round)
+    load_round = mmm_sys_round.loadDist
 
     print("Processing least cost assign...")
     mmm_sys = Least_Cost(mmm_config, cost_map)
@@ -145,6 +159,7 @@ if __name__ == "__main__":
     measure_Lest = mmm_sys.calculate_measure(env)
     total_lest = mmm_sys.totalCost
     measures.append(measure_Lest)
+    load_lest = mmm_sys.loadDist
 
     plt.figure()
     x_label = []
@@ -153,12 +168,22 @@ if __name__ == "__main__":
         x_label.append("ser" + str(i))
 
     wid = 0.17
-    plt.bar(x_num - wid, measure_random["serBusyRate"].values(), width=wid, label="Random")
+    plt.bar(x_num - wid,load_random, width=wid, label="First")
+    plt.bar(x_num, load_round, width=wid, label="Round")
+    plt.bar(x_num + wid, load_lest, width=wid, label="Least")
+    plt.xticks(range(mmm_config["SERNUM"]), x_label)
+    plt.xlabel("server")
+    plt.ylabel("load [packets]")
+    plt.grid(True)
+    plt.legend()
+    plt.show()
+
+    plt.bar(x_num - wid, measure_random["serBusyRate"].values(), width=wid, label="First")
     plt.bar(x_num, measure_round["serBusyRate"].values(), width=wid, label="Round")
     plt.bar(x_num + wid, measure_Lest["serBusyRate"].values(), width=wid, label="Least")
     plt.xticks(range(mmm_config["SERNUM"]), x_label)
     plt.xlabel("server")
-    plt.ylabel("load on server")
+    plt.ylabel("busy prob")
     plt.grid(True)
     plt.legend()
     plt.show()

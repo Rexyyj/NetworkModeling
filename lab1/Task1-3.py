@@ -6,9 +6,13 @@ import numpy as np
 import math
 class Random_Assign(MMm_sys):
     def __init__(self, config, cost):
-            super().__init__(config)
-            self.cost = cost
-            self.totalCost = 0
+        super().__init__(config)
+        self.cost = cost
+        self.totalCost = 0
+        self.loadDist = []
+        for j in range(self.serverNum):
+            self.loadDist.append(0)
+
 
     def assignMethod(self, queue, environment):
         # print("Using random assign method!")
@@ -18,6 +22,7 @@ class Random_Assign(MMm_sys):
                 if self.BusyServer[ser] == False:
                     self.BusyServer[ser] = True
                     self.totalCost+=self.cost[ser]
+                    self.loadDist[ser]+=1
                     service_time = random.expovariate(1.0 / self.SERVICE)
                     environment.process(
                         self.departure_process(environment, service_time, queue, cli, ser, self.SERVICE))
@@ -30,6 +35,9 @@ class Round_Robin(MMm_sys):
         self.cost = cost
         self.totalCost =0
         self.position = 0
+        self.loadDist = []
+        for j in range(self.serverNum):
+            self.loadDist.append(0)
 
     # Override assign method to round robin
     def assignMethod(self, queue, environment):
@@ -40,6 +48,7 @@ class Round_Robin(MMm_sys):
                 if self.BusyServer[self.position] == False:
                     self.BusyServer[self.position] = True
                     self.totalCost+=self.cost[self.position]
+                    self.loadDist[self.position]+=1
                     service_time = random.expovariate(1.0 / self.SERVICE)
                     environment.process(
                         self.departure_process(environment, service_time, queue, cli, self.position, self.SERVICE))
@@ -60,6 +69,9 @@ class Lest_Cost(MMm_sys):
         super().__init__(config)
         self.cost = cost
         self.totalCost=0
+        self.loadDist = []
+        for j in range(self.serverNum):
+            self.loadDist.append(0)
     # Override assign method to least cost
     def assignMethod(self, queue, environment):
         # print("Using least cost assign method!")
@@ -79,6 +91,7 @@ class Lest_Cost(MMm_sys):
             if least_cost_ser != None:
                 self.BusyServer[least_cost_ser] = True
                 self.totalCost+=self.cost[least_cost_ser]
+                self.loadDist[least_cost_ser]+=1
                 service_time = random.expovariate(1.0 / self.SERVICE)
                 environment.process(
                     self.departure_process(environment, service_time, queue, cli, least_cost_ser, self.SERVICE))
@@ -109,6 +122,7 @@ if __name__ == "__main__":
     env_random.run(until=mmm_sys_random.SIM_TIME)
     measure_random = mmm_sys_random.calculate_measure(env_random)
     total_random = mmm_sys_random.totalCost
+    load_random = mmm_sys_random.loadDist
 
     print("Processing round robin assign...")
     mmm_sys_round = Round_Robin(mmm_config,cost_map)
@@ -119,6 +133,7 @@ if __name__ == "__main__":
     env_round.run(until=mmm_sys_round.SIM_TIME)
     measure_round = mmm_sys_round.calculate_measure(env_round)
     total_round = mmm_sys_round.totalCost
+    load_round = mmm_sys_round.loadDist
 
     print("Processing least cost assign...")
     mmm_sys = Lest_Cost(mmm_config, cost_map)
@@ -129,6 +144,7 @@ if __name__ == "__main__":
     env.run(until=mmm_sys.SIM_TIME)
     measure_Lest = mmm_sys.calculate_measure(env)
     total_lest = mmm_sys.totalCost
+    load_lest = mmm_sys.loadDist
 
     plt.figure()
     x_label = []
@@ -137,14 +153,40 @@ if __name__ == "__main__":
         x_label.append("ser" + str(i))
 
     wid = 0.17
-    plt.bar(x_num - wid, measure_random["serBusyRate"].values(),width=wid, label="Random" )
+    plt.grid(True)
+    plt.bar(x_num - wid,load_random,width=wid, label="First" )
+    plt.bar(x_num, load_round,width=wid, label="Round" )
+    plt.bar(x_num + wid, load_lest,width=wid, label="Least" )
+    plt.xticks(range(mmm_config["SERNUM"]),x_label)
+    plt.xlabel("server")
+    plt.ylabel("load [packets]")
+    plt.legend()
+    plt.show()
+
+    plt.grid(True)
+    plt.bar(x_num - wid, measure_random["serBusyRate"].values(),width=wid, label="First" )
     plt.bar(x_num, measure_round["serBusyRate"].values(),width=wid, label="Round" )
     plt.bar(x_num + wid, measure_Lest["serBusyRate"].values(),width=wid, label="Least" )
     plt.xticks(range(mmm_config["SERNUM"]),x_label)
+    plt.xlabel("server")
+    plt.ylabel("busy probability")
     plt.legend()
     plt.show()
 
     print("The total cost of each assign method:")
-    print("Random assign: ",total_random)
+    print("First assign: ",total_random)
     print("Round robin assign: ",total_round)
     print("Lest cost assign: ",total_lest)
+    print("The average waiting delay of each assign method:")
+    print("First assign: ",measure_random["avgWaitDel"])
+    print("Round robin assign: ",measure_round["avgWaitDel"])
+    print("Lest cost assign: ",measure_Lest["avgWaitDel"])
+    print("The queuing delay of each assign method:")
+    print("First assign: ",measure_random["avgQueDel"])
+    print("Round robin assign: ",measure_round["avgQueDel"])
+    print("Lest cost assign: ",measure_Lest["avgQueDel"])
+    print("The pre-processed prob of each assign method:")
+    print("First assign: ",measure_random["preProb"])
+    print("Round robin assign: ",measure_round["preProb"])
+    print("Lest cost assign: ",measure_Lest["preProb"])
+

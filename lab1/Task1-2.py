@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 
 mmm_config = {
     "SERVICE": 10.0,
-    "ARRIVAL": 10.0/0.85,
+    "ARRIVAL": (10.0/0.85),
     "TYPE1": 1,
     "SIM_TIME": 500000,
     "QUEUESIZE": 0,
@@ -56,31 +56,29 @@ for mea in measures:
     queueDelay.append(mea["avgQueDel"])
     waitDelay.append(mea["avgWaitDel"])
 
-plt.plot(buffer_size, preProProb, "b", label="pre-process prob")
-plt.plot(buffer_size, forCloProb, "g", label="forward prob")
+plt.plot(buffer_size, preProProb, "b", label="pre-processed prob")
+plt.plot(buffer_size, forCloProb, "g", label="forwarded prob")
 plt.plot(buffer_size, buffOccu, "r", label="buffer occu rate")
-plt.plot(buffer_size, busyRate0, "y", label="busy rate-ser0")
-plt.plot(buffer_size, busyRate1, "k", label="busy rate-ser1")
-
-
+plt.plot(buffer_size, busyRate0, "y", label="busy prob-ser0")
+plt.plot(buffer_size, busyRate1, "k", label="busy prob-ser1")
 plt.xlabel("buffer size")
-plt.ylabel("normalized value")
+plt.ylabel("probability")
 plt.legend()
 plt.grid(True)
-# plt.show()
-plt.savefig("./figures/Task2-1")
-plt.close()
+plt.show()
+# plt.savefig("./figures/Task2-1")
+# plt.close()
 
 
-plt.plot(buffer_size, queueDelay, "b", label="avg queue delay")
-plt.plot(buffer_size, waitDelay, "g", label="avg wait delay")
+plt.plot(buffer_size, queueDelay, "b", label="avg queuing delay")
+plt.plot(buffer_size, waitDelay, "g", label="avg waiting delay")
 plt.xlabel("buffer size")
 plt.ylabel("delay [s]")
 plt.legend()
 plt.grid(True)
-#plt.show()
-plt.savefig("./figures/Task2-2")
-plt.close()
+plt.show()
+# plt.savefig("./figures/Task2-2")
+# plt.close()
 
 
 # compare with single server
@@ -112,7 +110,7 @@ queueDelay2 = []
 waitDelay2 = []
 for mea in measures_single:
     preProProb2.append(mea["preProb"])
-    buffOccu2.append(mea["avgBufOccu"])  # have some problem in counting !!!!!
+    buffOccu2.append(mea["avgBufOccu"])
     busyRate2.append(mea["serBusyRate"][0])
     queueDelay2.append(mea["avgQueDel"])
     waitDelay2.append(mea["avgWaitDel"])
@@ -120,46 +118,42 @@ for mea in measures_single:
 plt.plot(buffer_size, preProProb, "b", label="2-server")
 plt.plot(buffer_size, preProProb2, "g", label="single-server")
 plt.xlabel("buffer size")
-plt.ylabel("normalized value")
-plt.title("Pre-process Probability")
+plt.ylabel("pre-processed Probability")
 plt.legend()
 plt.grid(True)
-#plt.show()
-plt.savefig("./figures/Task2-3")
-plt.close()
+plt.show()
+# plt.savefig("./figures/Task2-3")
+# plt.close()
 
 plt.plot(buffer_size, buffOccu, "r", label="2-server")
 plt.plot(buffer_size, buffOccu2, "g", label="single-server")
 plt.xlabel("buffer size")
-plt.ylabel("normalized value")
-plt.title("Buffer Occupancy Rate")
+plt.ylabel("buffer occupancy")
 plt.legend()
 plt.grid(True)
-#plt.show()
-plt.savefig("./figures/Task2-4")
-plt.close()
+plt.show()
+# plt.savefig("./figures/Task2-4")
+# plt.close()
 
 plt.plot(buffer_size, busyRate2, "r", label="single-server")
 plt.plot(buffer_size, busyRate0, "g", label="2-server_ser0")
 plt.plot(buffer_size, busyRate1, "b", label="2-server_ser1")
 plt.xlabel("buffer size")
-plt.ylabel("normalized value")
-plt.title("Server Busy Rate")
+plt.ylabel("server busy prob")
 plt.legend()
 plt.grid(True)
-#plt.show()
-plt.savefig("./figures/Task2-5")
-plt.close()
+plt.show()
+# plt.savefig("./figures/Task2-5")
+# plt.close()
 
-plt.plot(buffer_size, queueDelay, "b", label="2-ser queue delay")
-plt.plot(buffer_size, waitDelay, "g", label="2-ser wait delay")
-plt.plot(buffer_size, queueDelay2, "r", label="single-ser queue delay")
-plt.plot(buffer_size, waitDelay2, "y", label="single-ser wait delay")
+plt.plot(buffer_size, queueDelay, "b", label="2-ser queuing delay")
+plt.plot(buffer_size, waitDelay, "g", label="2-ser waiting delay")
+plt.plot(buffer_size, queueDelay2, "r", label="single-ser queuing delay")
+plt.plot(buffer_size, waitDelay2, "y", label="single-ser waiting delay")
 plt.xlabel("buffer size")
 plt.ylabel("delay [s]")
-plt.title("Delay")
 plt.legend()
 plt.grid(True)
-#plt.show()
-plt.savefig("./figures/Task2-6")
-plt.close()
+plt.show()
+# plt.savefig("./figures/Task2-6")
+# plt.close()
