@@ -78,7 +78,7 @@ class Round_Robin_Cost(MMm_sys):
                         self.position += 1
 
 
-class Random_Assign(MMm_sys):
+class First_Assign(MMm_sys):
     def __init__(self, config, cost):
         super().__init__(config)
         self.cost = cost
@@ -125,17 +125,17 @@ if __name__ == "__main__":
 
     measures = []
 
-    print("Processing random assign...")
-    mmm_sys_random = Random_Assign(mmm_config, cost_map)
-    env_random = simpy.Environment()
-    env_random.process(mmm_sys_random.arrival_process(env_random))
-    for server in mmm_sys_random.BusyServer.keys():
-        env_random.process(mmm_sys_random.busyMonitor(env_random, server))
-    env_random.run(until=mmm_sys_random.SIM_TIME)
-    measure_random = mmm_sys_random.calculate_measure(env_random)
-    total_random = mmm_sys_random.totalCost
-    measures.append(measure_random)
-    load_random = mmm_sys_random.loadDist
+    print("Processing first free assign...")
+    mmm_sys_first = First_Assign(mmm_config, cost_map)
+    env_first = simpy.Environment()
+    env_first.process(mmm_sys_first.arrival_process(env_first))
+    for server in mmm_sys_first.BusyServer.keys():
+        env_first.process(mmm_sys_first.busyMonitor(env_first, server))
+    env_first.run(until=mmm_sys_first.SIM_TIME)
+    measure_first = mmm_sys_first.calculate_measure(env_first)
+    total_first = mmm_sys_first.totalCost
+    measures.append(measure_first)
+    load_first = mmm_sys_first.loadDist
 
     print("Processing round robin assign...")
     mmm_sys_round = Round_Robin_Cost(mmm_config, cost_map)
@@ -168,7 +168,7 @@ if __name__ == "__main__":
         x_label.append("ser" + str(i))
 
     wid = 0.17
-    plt.bar(x_num - wid,load_random, width=wid, label="First")
+    plt.bar(x_num - wid, load_first, width=wid, label="First")
     plt.bar(x_num, load_round, width=wid, label="Round")
     plt.bar(x_num + wid, load_lest, width=wid, label="Least")
     plt.xticks(range(mmm_config["SERNUM"]), x_label)
@@ -178,7 +178,7 @@ if __name__ == "__main__":
     plt.legend()
     plt.show()
 
-    plt.bar(x_num - wid, measure_random["serBusyRate"].values(), width=wid, label="First")
+    plt.bar(x_num - wid, measure_first["serBusyRate"].values(), width=wid, label="First")
     plt.bar(x_num, measure_round["serBusyRate"].values(), width=wid, label="Round")
     plt.bar(x_num + wid, measure_Lest["serBusyRate"].values(), width=wid, label="Least")
     plt.xticks(range(mmm_config["SERNUM"]), x_label)
@@ -222,11 +222,11 @@ if __name__ == "__main__":
     # plt.show()
 
 
-    labels = ["Random Assign", "Round Robin", "Least Cost"]
+    labels = ["First Free", "Round Robin", "Least Cost"]
     print("\t\t",labels)
     print("LocalProb:",local_prob)
     print("Queue Occu:",buff_occu)
     print("Queue Delay:",avg_queue)
     print("Wait Delay:",avg_wait)
-    print("Cost: \t",[total_random,total_round,total_lest])
+    print("Cost: \t", [total_first, total_round, total_lest])
 
