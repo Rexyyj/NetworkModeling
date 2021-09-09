@@ -67,7 +67,7 @@ class MMm_sys:
 
             # update state variable and put the client in the queue
             # Implementation of controlling queueing size
-            if len(queue)+self.working_ser_num < (queueSize + 1):
+            if len(queue)+self.working_ser_num < (queueSize + self.serverNum):
                 cl = Client(self.TYPE1, environment.now)
                 queue.append(cl)
                 self.users += 1
@@ -171,7 +171,7 @@ if __name__ == "__main__":
 
     mmm_config = {
         "SERVICE": 10.0,
-        "ARRIVAL": 10/0.85,  # need to be set!!
+        "ARRIVAL": (10/0.85),  # need to be set!!
         "TYPE1": 1,
         "SIM_TIME": 500000,
         "QUEUESIZE": 1,
